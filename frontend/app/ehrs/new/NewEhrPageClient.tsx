@@ -37,7 +37,7 @@ export default function NewEhrPageClient({ patientId }: NewEhrPageClientProps) {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -264,22 +264,28 @@ export default function NewEhrPageClient({ patientId }: NewEhrPageClientProps) {
                   <label htmlFor="patient" className="block text-sm font-medium text-gray-700 mb-3">
                     Select Patient
                   </label>
-                  <select
-                    id="patient"
-                    value={selectedPatient?.id || ''}
-                    onChange={(e) => {
-                      const patient = patients.find(p => p.id.toString() === e.target.value);
-                      setSelectedPatient(patient || null);
-                    }}
-                    className="block w-full px-4 py-2.5 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  >
-                    <option value="">Select a patient...</option>
-                    {patients.map((patient) => (
-                      <option key={patient.id} value={patient.id}>
-                        {patient.name} (ID: {patient.id})
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={selectedPatient?.id || ''}
+                      onChange={(e) => {
+                        const patient = patients.find(p => p.id.toString() === e.target.value);
+                        setSelectedPatient(patient || null);
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white pr-12"
+                    >
+                      <option value="">Select a patient</option>
+                      {patients.map((patient) => (
+                        <option key={patient.id} value={patient.id}>
+                          {patient.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
 
                 {selectedPatient && (
