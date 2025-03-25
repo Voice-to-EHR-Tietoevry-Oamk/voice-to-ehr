@@ -3,6 +3,31 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  BarElement,
+} from 'chart.js';
+import { Line, Pie, Bar } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  BarElement
+);
 
 interface DashboardStats {
   totalPatients: number;
@@ -87,61 +112,137 @@ export default function Dashboard() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">VoiceCare EHR Dashboard</h1>
-          <button
-            onClick={() => {
-              localStorage.removeItem('user');
-              router.push('/');
-            }}
-            className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
-          >
-            Sign out
-          </button>
-        </div>
-      </header>
+  // Chart data
+  const ehrTrendData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [
+      {
+        label: 'EHRs Created',
+        data: [45, 59, 80, 81, 56, 55],
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+        tension: 0.4,
+      },
+    ],
+  };
 
+  const ehrStatusData = {
+    labels: ['Completed', 'Pending Review', 'In Progress'],
+    datasets: [
+      {
+        data: [280, 45, 17],
+        backgroundColor: [
+          'rgba(34, 197, 94, 0.8)',
+          'rgba(234, 179, 8, 0.8)',
+          'rgba(59, 130, 246, 0.8)',
+        ],
+      },
+    ],
+  };
+
+  const patientAgeData = {
+    labels: ['18-30', '31-45', '46-60', '61+'],
+    datasets: [
+      {
+        label: 'Patients by Age Group',
+        data: [45, 62, 38, 11],
+        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+      },
+    },
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-sm font-medium text-gray-500">Total Patients</h3>
-            <p className="mt-2 text-3xl font-semibold text-gray-900">{stats.totalPatients}</p>
+          <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <div className="p-6">
+              <h3 className="text-sm font-medium text-gray-500">Total Patients</h3>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">{stats.totalPatients}</p>
+            </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-sm font-medium text-gray-500">Recent EHRs</h3>
-            <p className="mt-2 text-3xl font-semibold text-gray-900">{stats.recentEhrs}</p>
+          <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <div className="p-6">
+              <h3 className="text-sm font-medium text-gray-500">Recent EHRs</h3>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">{stats.recentEhrs}</p>
+            </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-sm font-medium text-gray-500">Pending Reviews</h3>
-            <p className="mt-2 text-3xl font-semibold text-gray-900">{stats.pendingReviews}</p>
+          <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <div className="p-6">
+              <h3 className="text-sm font-medium text-gray-500">Pending Reviews</h3>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">{stats.pendingReviews}</p>
+            </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-sm font-medium text-gray-500">Total EHRs</h3>
-            <p className="mt-2 text-3xl font-semibold text-gray-900">{stats.totalEhrs}</p>
+          <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <div className="p-6">
+              <h3 className="text-sm font-medium text-gray-500">Total EHRs</h3>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">{stats.totalEhrs}</p>
+            </div>
           </div>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <div className="px-8 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+              <h2 className="text-lg font-medium text-gray-900">EHR Creation Trend</h2>
+            </div>
+            <div className="p-8">
+              <div className="h-80">
+                <Line options={chartOptions} data={ehrTrendData} />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <div className="px-8 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+              <h2 className="text-lg font-medium text-gray-900">EHR Status Distribution</h2>
+            </div>
+            <div className="p-8">
+              <div className="h-80">
+                <Pie options={chartOptions} data={ehrStatusData} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <div className="px-8 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+              <h2 className="text-lg font-medium text-gray-900">Patient Age Distribution</h2>
+            </div>
+            <div className="p-8">
+              <div className="h-80">
+                <Bar options={chartOptions} data={patientAgeData} />
+              </div>
+            </div>
+          </div>
+
           {/* Recent Patients */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200">
+          <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+            <div className="px-8 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-medium text-gray-900">Recent Patients</h2>
-                <Link href="/patients" className="text-sm text-blue-600 hover:text-blue-500">
+                <Link href="/patients" className="text-sm text-blue-600 hover:text-blue-500 transition-colors">
                   View all
                 </Link>
               </div>
             </div>
-            <div className="p-6">
+            <div className="p-8">
               <div className="space-y-4">
                 {recentPatients.map((patient) => (
-                  <div key={patient.id} className="flex items-center justify-between">
+                  <div key={patient.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
                       <p className="text-sm font-medium text-gray-900">{patient.name}</p>
                       <p className="text-sm text-gray-500">
@@ -151,13 +252,13 @@ export default function Dashboard() {
                     <div className="flex space-x-2">
                       <Link
                         href={`/patient/${patient.id}`}
-                        className="text-sm text-blue-600 hover:text-blue-500"
+                        className="text-sm text-blue-600 hover:text-blue-500 transition-colors"
                       >
                         View
                       </Link>
                       <Link
                         href={`/patient/${patient.id}/edit`}
-                        className="text-sm text-gray-600 hover:text-gray-500"
+                        className="text-sm text-gray-600 hover:text-gray-500 transition-colors"
                       >
                         Edit
                       </Link>
@@ -167,41 +268,41 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Recent EHRs */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-medium text-gray-900">Recent EHRs</h2>
-                <Link href="/ehrs" className="text-sm text-blue-600 hover:text-blue-500">
-                  View all
-                </Link>
-              </div>
+        {/* Recent EHRs */}
+        <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+          <div className="px-8 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-medium text-gray-900">Recent EHRs</h2>
+              <Link href="/ehrs" className="text-sm text-blue-600 hover:text-blue-500 transition-colors">
+                View all
+              </Link>
             </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                {recentEhrs.map((ehr) => (
-                  <div key={ehr.id} className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{ehr.patientName}</p>
-                      <p className="text-sm text-gray-500">{ehr.date}</p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        ehr.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {ehr.status}
-                      </span>
-                      <Link
-                        href={`/ehr/${ehr.id}`}
-                        className="text-sm text-blue-600 hover:text-blue-500"
-                      >
-                        View
-                      </Link>
-                    </div>
+          </div>
+          <div className="p-8">
+            <div className="space-y-4">
+              {recentEhrs.map((ehr) => (
+                <div key={ehr.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{ehr.patientName}</p>
+                    <p className="text-sm text-gray-500">{ehr.date}</p>
                   </div>
-                ))}
-              </div>
+                  <div className="flex items-center space-x-2">
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      ehr.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {ehr.status}
+                    </span>
+                    <Link
+                      href={`/ehr/${ehr.id}`}
+                      className="text-sm text-blue-600 hover:text-blue-500 transition-colors"
+                    >
+                      View
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
