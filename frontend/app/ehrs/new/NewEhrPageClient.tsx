@@ -112,10 +112,19 @@ export default function NewEhrPageClient({ patientId }: NewEhrPageClientProps) {
       updateWaveform();
 
       const chunks: BlobPart[] = [];
-      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-      setAudioChunks(chunks);
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunks.push(e.data);
+        }
+      };
       
-      mediaRecorder.start();
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        setAudioBlob(blob);
+      };
+      
+      setAudioChunks(chunks);
+      mediaRecorder.start(200); // Collect data every 200ms
       setRecording(true);
       setRecordingTime(0);
     } catch (error) {
@@ -145,8 +154,6 @@ export default function NewEhrPageClient({ patientId }: NewEhrPageClientProps) {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      const blob = new Blob(audioChunks, { type: 'audio/webm' });
-      setAudioBlob(blob);
     }
   };
 
@@ -161,20 +168,71 @@ export default function NewEhrPageClient({ patientId }: NewEhrPageClientProps) {
   const generateEhr = async () => {
     setGenerating(true);
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setGeneratedEhr({
-        transcription: 'Sample transcription...',
-        diagnosis: 'Sample diagnosis...',
-        treatment: 'Sample treatment...',
-        medications: 'Sample medications...',
-        notes: 'Sample notes...'
+      if (!audioBlob) {
+        throw new Error('No audio recording found');
+      }
+
+      // Create form data with audio file
+      const formData = new FormData();
+      // Ensure the blob is sent with the correct filename and type
+      const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
+      formData.append('audio', audioFile);
+
+      // Send to backend for processing
+      const response = await fetch('http://localhost:5000/api/voice/transcribe', {
+        method: 'POST',
+        body: formData,
+        // Don't set Content-Type header - browser will set it with boundary
       });
-    } catch (error) {
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to process audio');
+      }
+
+      const data = await response.json();
+      
+      if (!data.transcription || !data.formatted_ehr) {
+        throw new Error('Invalid response from server');
+      }
+
+      setGeneratedEhr({
+        transcription: data.transcription,
+        ...parseEhrSections(data.formatted_ehr)
+      });
+      
+      // Move to review step
+      setCurrentStep('review');
+    } catch (error: any) {
       console.error('Error generating EHR:', error);
+      alert(error.message || 'Failed to generate EHR. Please try again.');
     } finally {
       setGenerating(false);
     }
+  };
+
+  const parseEhrSections = (formattedEhr: string) => {
+    // Split the formatted EHR into sections
+    const sections = formattedEhr.split('\n\n');
+    const ehrData: any = {};
+    
+    sections.forEach(section => {
+      if (section.includes('Chief Complaint:')) {
+        ehrData.chiefComplaint = section.replace('Chief Complaint:', '').trim();
+      } else if (section.includes('History of Present Illness:')) {
+        ehrData.presentIllness = section.replace('History of Present Illness:', '').trim();
+      } else if (section.includes('Past Medical History:')) {
+        ehrData.pastHistory = section.replace('Past Medical History:', '').trim();
+      } else if (section.includes('Medications:')) {
+        ehrData.medications = section.replace('Medications:', '').trim();
+      } else if (section.includes('Assessment:')) {
+        ehrData.assessment = section.replace('Assessment:', '').trim();
+      } else if (section.includes('Plan:')) {
+        ehrData.plan = section.replace('Plan:', '').trim();
+      }
+    });
+    
+    return ehrData;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
