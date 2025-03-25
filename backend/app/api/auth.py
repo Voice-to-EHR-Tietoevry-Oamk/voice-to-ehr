@@ -4,22 +4,22 @@ bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 # Dummy user database (for demonstration)
 DUMMY_USERS = {
-    'doctor': {'password': 'password123', 'role': 'doctor'}
+    'doctor@example.com': {'password': 'password123', 'role': 'doctor'}
 }
 
 @bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    username = data.get('username')
+    email = data.get('email')
     password = data.get('password')
     
     # Simple authentication (for demonstration)
-    if username in DUMMY_USERS and DUMMY_USERS[username]['password'] == password:
+    if email in DUMMY_USERS and DUMMY_USERS[email]['password'] == password:
         return jsonify({
             'success': True,
             'user': {
-                'username': username,
-                'role': DUMMY_USERS[username]['role']
+                'email': email,
+                'role': DUMMY_USERS[email]['role']
             }
         })
     
