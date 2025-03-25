@@ -204,57 +204,43 @@ export default function NewEhrPageClient({ patientId }: NewEhrPageClientProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow-md sticky top-0 z-10 backdrop-blur-sm bg-white/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/ehrs"
-                className="text-gray-500 hover:text-blue-600 transition-colors"
-              >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </Link>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Create New EHR</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/ehrs"
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
-              >
-                Cancel
-              </Link>
-            </div>
-          </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Title and Actions */}
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Create New EHR</h1>
+          <Link
+            href="/ehrs"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+          >
+            Cancel
+          </Link>
         </div>
-      </header>
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Progress Steps */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {['patient', 'visit', 'recording', 'prompt', 'generate', 'review'].map((step, index) => (
-              <div key={step} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  currentStep === step
-                    ? 'bg-blue-600 text-white'
-                    : index < ['patient', 'visit', 'recording', 'prompt', 'generate', 'review'].indexOf(currentStep)
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-200 text-gray-600'
-                }`}>
-                  {index + 1}
+          <div className="flex items-center justify-center">
+            <div className="flex items-center">
+              {['patient', 'visit', 'recording', 'prompt', 'generate', 'review'].map((step, index) => (
+                <div key={step} className="flex items-center">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    currentStep === step
+                      ? 'bg-blue-600 text-white ring-2 ring-blue-200'
+                      : index < ['patient', 'visit', 'recording', 'prompt', 'generate', 'review'].indexOf(currentStep)
+                      ? 'bg-green-500 text-white ring-2 ring-green-200'
+                      : 'bg-gray-200 text-gray-600'
+                  }`}>
+                    {index + 1}
+                  </div>
+                  {index < 5 && (
+                    <div className={`w-20 h-1 mx-2 ${
+                      index < ['patient', 'visit', 'recording', 'prompt', 'generate', 'review'].indexOf(currentStep)
+                      ? 'bg-green-500'
+                      : 'bg-gray-200'
+                    }`} />
+                  )}
                 </div>
-                {index < 5 && (
-                  <div className={`w-16 h-1 mx-2 ${
-                    index < ['patient', 'visit', 'recording', 'prompt', 'generate', 'review'].indexOf(currentStep)
-                    ? 'bg-green-500'
-                    : 'bg-gray-200'
-                  }`} />
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
@@ -295,6 +281,35 @@ export default function NewEhrPageClient({ patientId }: NewEhrPageClientProps) {
                     ))}
                   </select>
                 </div>
+
+                {selectedPatient && (
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Patient Details</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Name</p>
+                        <p className="text-sm text-gray-900">{selectedPatient.name}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Age</p>
+                        <p className="text-sm text-gray-900">{selectedPatient.age} years</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Gender</p>
+                        <p className="text-sm text-gray-900">{selectedPatient.gender}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Contact</p>
+                        <p className="text-sm text-gray-900">{selectedPatient.phone}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-sm font-medium text-gray-500">Email</p>
+                        <p className="text-sm text-gray-900">{selectedPatient.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex justify-end">
                   <button
                     onClick={() => setCurrentStep('visit')}
@@ -474,15 +489,15 @@ export default function NewEhrPageClient({ patientId }: NewEhrPageClientProps) {
                     className="px-8 py-4 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 border border-transparent rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {generating ? (
-                      <div className="flex items-center space-x-2">
-                        <Image src="/loading.svg" alt="Loading" width={20} height={20} className="animate-spin" />
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         <span>Generating EHR...</span>
                       </div>
                     ) : (
                       'Generate EHR'
                     )}
                   </button>
-                  {generatedEhr && (
+                  {generatedEhr && !generating && (
                     <div className="mt-4 text-green-600 font-medium">
                       EHR generated successfully!
                     </div>
