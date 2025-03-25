@@ -2,67 +2,77 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import VoiceRecorder from '../../components/VoiceRecorder';
-import EhrTextForm from '../../components/EhrTextForm';
-
-interface PatientPageClientProps {
-  patientId: string;
-}
+import Link from 'next/link';
 
 interface Patient {
   id: number;
   name: string;
   age: number;
   gender: string;
+  email: string;
+  phone: string;
+  address: string;
+  lastVisit: string;
+  status: string;
+}
+
+interface EhrRecord {
+  id: number;
+  date: string;
+  type: string;
+  status: string;
+  doctor: string;
+}
+
+interface PatientPageClientProps {
+  patientId: string;
 }
 
 export default function PatientPageClient({ patientId }: PatientPageClientProps) {
   const [patient, setPatient] = useState<Patient | null>(null);
-  const [ehrData, setEhrData] = useState<any>({
-    symptoms: '',
-    diagnosis: '',
-    treatment: ''
-  });
+  const [ehrs, setEhrs] = useState<EhrRecord[]>([]);
+  const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    // Check for auth
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
+    // Check authentication
+    const user = localStorage.getItem('user');
+    if (!user) {
       router.push('/');
       return;
     }
 
-    const fetchPatient = async () => {
+    // Fetch patient data
+    const fetchPatientData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/patients/${patientId}`);
-        const data = await response.json();
+        // Mock data for demonstration
+        setPatient({
+          id: parseInt(patientId),
+          name: 'John Doe',
+          age: 45,
+          gender: 'Male',
+          email: 'john.doe@example.com',
+          phone: '(555) 123-4567',
+          address: '123 Main St, City, State 12345',
+          lastVisit: '2024-03-15',
+          status: 'Active'
+        });
 
-        if (data.success) {
-          setPatient(data.patient);
-        } else {
-          setError('Failed to load patient data');
-        }
-      } catch (err) {
-        setError('An error occurred while fetching patient data');
-        console.error(err);
+        setEhrs([
+          { id: 1, date: '2024-03-15', type: 'Consultation', status: 'Completed', doctor: 'Dr. Smith' },
+          { id: 2, date: '2024-02-15', type: 'Follow-up', status: 'Completed', doctor: 'Dr. Johnson' },
+          { id: 3, date: '2024-01-15', type: 'Initial Visit', status: 'Completed', doctor: 'Dr. Williams' },
+        ]);
+      } catch (error) {
+        console.error('Error fetching patient data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPatient();
+    fetchPatientData();
   }, [patientId, router]);
-
-  const handleTranscriptionComplete = (transcriptionData: any) => {
-    setEhrData(transcriptionData);
-  };
-
-  const handleBackToDashboard = () => {
-    router.push('/dashboard');
-  };
 
   if (loading) {
     return (
@@ -72,63 +82,209 @@ export default function PatientPageClient({ patientId }: PatientPageClientProps)
     );
   }
 
-  if (error || !patient) {
+  if (!patient) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-red-100 p-4 rounded-md">
-          <p className="text-red-700">{error || 'Patient not found'}</p>
-          <button 
-            onClick={handleBackToDashboard}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-          >
-            Back to Dashboard
-          </button>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900">Patient not found</h2>
+          <Link href="/patients" className="mt-4 text-blue-600 hover:text-blue-500">
+            Return to Patients
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
-      <header className="bg-white shadow-sm mb-8">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Voice-to-EHR</h1>
-          
-          <button 
-            onClick={handleBackToDashboard}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center"
-          >
-            Back to Dashboard
-          </button>
+          <div className="flex items-center space-x-4">
+            <Link
+              href="/patients"
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-900">{patient.name}</h1>
+          </div>
+          <div className="flex space-x-4">
+            <Link
+              href={`/patient/${patient.id}/edit`}
+              className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
+            >
+              Edit Patient
+            </Link>
+            <Link
+              href={`/ehrs/new?patientId=${patient.id}`}
+              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              New EHR
+            </Link>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-          <h2 className="text-xl font-semibold mb-4">Patient Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-gray-600">Name</p>
-              <p className="font-medium">{patient.name}</p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Patient Info Card */}
+        <div className="bg-white shadow rounded-lg mb-8">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-medium text-gray-900">Patient Information</h2>
+              <span className={`px-2 py-1 text-xs rounded-full ${
+                patient.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+              }`}>
+                {patient.status}
+              </span>
             </div>
-            <div>
-              <p className="text-gray-600">Age</p>
-              <p className="font-medium">{patient.age}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Gender</p>
-              <p className="font-medium">{patient.gender}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Patient ID</p>
-              <p className="font-medium">{patient.id}</p>
+          </div>
+          <div className="px-6 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Personal Details</h3>
+                <dl className="mt-2 space-y-2">
+                  <div>
+                    <dt className="text-sm text-gray-500">Age</dt>
+                    <dd className="text-sm text-gray-900">{patient.age} years</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-500">Gender</dt>
+                    <dd className="text-sm text-gray-900">{patient.gender}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-500">Last Visit</dt>
+                    <dd className="text-sm text-gray-900">{patient.lastVisit}</dd>
+                  </div>
+                </dl>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Contact Information</h3>
+                <dl className="mt-2 space-y-2">
+                  <div>
+                    <dt className="text-sm text-gray-500">Email</dt>
+                    <dd className="text-sm text-gray-900">{patient.email}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-500">Phone</dt>
+                    <dd className="text-sm text-gray-900">{patient.phone}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-500">Address</dt>
+                    <dd className="text-sm text-gray-900">{patient.address}</dd>
+                  </div>
+                </dl>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <VoiceRecorder onTranscriptionComplete={handleTranscriptionComplete} />
-          <EhrTextForm initialData={ehrData} patientId={parseInt(patientId, 10)} />
+        {/* Tabs */}
+        <div className="bg-white shadow rounded-lg">
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px">
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`${
+                  activeTab === 'overview'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm`}
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => setActiveTab('ehrs')}
+                className={`${
+                  activeTab === 'ehrs'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm`}
+              >
+                EHRs
+              </button>
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`${
+                  activeTab === 'history'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm`}
+              >
+                History
+              </button>
+            </nav>
+          </div>
+
+          {/* Tab Content */}
+          <div className="p-6">
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
+                  <div className="mt-4 space-y-4">
+                    {ehrs.slice(0, 3).map((ehr) => (
+                      <div key={ehr.id} className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{ehr.type}</p>
+                          <p className="text-sm text-gray-500">{ehr.date}</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            ehr.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {ehr.status}
+                          </span>
+                          <Link
+                            href={`/ehr/${ehr.id}`}
+                            className="text-sm text-blue-600 hover:text-blue-500"
+                          >
+                            View
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'ehrs' && (
+              <div className="space-y-4">
+                {ehrs.map((ehr) => (
+                  <div key={ehr.id} className="flex items-center justify-between py-4 border-b border-gray-200 last:border-0">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{ehr.type}</p>
+                      <p className="text-sm text-gray-500">{ehr.date} • {ehr.doctor}</p>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        ehr.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {ehr.status}
+                      </span>
+                      <Link
+                        href={`/ehr/${ehr.id}`}
+                        className="text-sm text-blue-600 hover:text-blue-500"
+                      >
+                        View
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === 'history' && (
+              <div className="space-y-4">
+                <div className="text-sm text-gray-500">
+                  Patient history and timeline will be displayed here.
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>
