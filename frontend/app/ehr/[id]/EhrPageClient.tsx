@@ -85,28 +85,18 @@ export default function EhrPageClient({ ehrId }: EhrPageClientProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/ehrs"
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">EHR #{ehr.id}</h1>
-              <p className="text-sm text-gray-500">{ehr.patientName}</p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Title and Actions */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">EHR #{ehr.id}</h1>
+            <p className="text-sm text-gray-500 mt-1">{ehr.patientName}</p>
           </div>
           <div className="flex space-x-4">
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
             >
               {isEditing ? 'Cancel' : 'Edit'}
             </button>
@@ -115,19 +105,17 @@ export default function EhrPageClient({ ehrId }: EhrPageClientProps) {
                 // Handle save
                 setIsEditing(false);
               }}
-              className={`px-4 py-2 text-sm rounded-lg ${
+              className={`px-4 py-2 text-sm font-medium rounded-lg ${
                 isEditing
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              } transition-all duration-200`}
             >
               Save
             </button>
           </div>
         </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* EHR Info Card */}
         <div className="bg-white shadow rounded-lg mb-8">
           <div className="px-6 py-4 border-b border-gray-200">
