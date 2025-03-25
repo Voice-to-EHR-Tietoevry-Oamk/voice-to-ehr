@@ -32,7 +32,7 @@ python -m venv venv
 3. Activate the virtual environment:
 ```bash
 # Windows
-venv\Scripts\activate
+venv/Scripts/activate
 
 # Linux/Mac
 source venv/bin/activate
@@ -73,7 +73,7 @@ The frontend will run on http://localhost:3000
 
 1. Open http://localhost:3000 in your browser
 2. Log in with the test credentials:
-   - Username: `doctor`
+   - Email: `doctor@example.com`
    - Password: `password123`
 3. Browse the patient list and select a patient
 4. Record your voice by clicking the record button

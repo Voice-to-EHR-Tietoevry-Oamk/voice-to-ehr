@@ -35,5 +35,5 @@ The frontend connects to a Flask backend running on `http://localhost:5000`. Mak
 
 ## Test Credentials
 
-- Username: `doctor`
+- Email: `doctor@example.com`
 - Password: `password123`
