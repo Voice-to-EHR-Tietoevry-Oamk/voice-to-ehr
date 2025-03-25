@@ -96,142 +96,163 @@ export default function PatientPageClient({ patientId }: PatientPageClientProps)
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/patients"
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-900">{patient.name}</h1>
-          </div>
-          <div className="flex space-x-4">
-            <Link
-              href={`/patient/${patient.id}/edit`}
-              className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
-            >
-              Edit Patient
-            </Link>
-            <Link
-              href={`/ehrs/new?patientId=${patient.id}`}
-              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              New EHR
-            </Link>
+      <header className="bg-white shadow-md sticky top-0 z-10 backdrop-blur-sm bg-white/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/patients"
+                className="text-gray-500 hover:text-blue-600 transition-colors"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </Link>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{patient.name}</h1>
+            </div>
+            <div className="flex space-x-4">
+              <Link
+                href={`/patient/${patient.id}/edit`}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+              >
+                Edit Patient
+              </Link>
+              <Link
+                href={`/ehrs/new?patientId=${patient.id}`}
+                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 border border-transparent rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                New EHR
+              </Link>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Patient Info Card */}
-        <div className="bg-white shadow rounded-lg mb-8">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-medium text-gray-900">Patient Information</h2>
-              <span className={`px-2 py-1 text-xs rounded-full ${
-                patient.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-              }`}>
-                {patient.status}
-              </span>
-            </div>
-          </div>
-          <div className="px-6 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Personal Details</h3>
-                <dl className="mt-2 space-y-2">
-                  <div>
-                    <dt className="text-sm text-gray-500">Age</dt>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Patient Information */}
+          <div className="lg:col-span-1">
+            <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+              <div className="px-8 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                <h2 className="text-lg font-medium text-gray-900">Patient Information</h2>
+              </div>
+              <div className="p-8">
+                <dl className="space-y-4">
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <dt className="text-sm text-gray-500 w-28">Age</dt>
                     <dd className="text-sm text-gray-900">{patient.age} years</dd>
                   </div>
-                  <div>
-                    <dt className="text-sm text-gray-500">Gender</dt>
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <dt className="text-sm text-gray-500 w-28">Gender</dt>
                     <dd className="text-sm text-gray-900">{patient.gender}</dd>
                   </div>
-                  <div>
-                    <dt className="text-sm text-gray-500">Last Visit</dt>
-                    <dd className="text-sm text-gray-900">{patient.lastVisit}</dd>
-                  </div>
-                </dl>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Contact Information</h3>
-                <dl className="mt-2 space-y-2">
-                  <div>
-                    <dt className="text-sm text-gray-500">Email</dt>
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <dt className="text-sm text-gray-500 w-28">Email</dt>
                     <dd className="text-sm text-gray-900">{patient.email}</dd>
                   </div>
-                  <div>
-                    <dt className="text-sm text-gray-500">Phone</dt>
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <dt className="text-sm text-gray-500 w-28">Phone</dt>
                     <dd className="text-sm text-gray-900">{patient.phone}</dd>
                   </div>
-                  <div>
-                    <dt className="text-sm text-gray-500">Address</dt>
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <dt className="text-sm text-gray-500 w-28">Address</dt>
                     <dd className="text-sm text-gray-900">{patient.address}</dd>
+                  </div>
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <dt className="text-sm text-gray-500 w-28">Last Visit</dt>
+                    <dd className="text-sm text-gray-900">{patient.lastVisit}</dd>
+                  </div>
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <dt className="text-sm text-gray-500 w-28">Status</dt>
+                    <dd className="text-sm text-gray-900">{patient.status}</dd>
                   </div>
                 </dl>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Tabs */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="border-b border-gray-200">
-            <nav className="flex -mb-px">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`${
-                  activeTab === 'overview'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm`}
-              >
-                Overview
-              </button>
-              <button
-                onClick={() => setActiveTab('ehrs')}
-                className={`${
-                  activeTab === 'ehrs'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm`}
-              >
-                EHRs
-              </button>
-              <button
-                onClick={() => setActiveTab('history')}
-                className={`${
-                  activeTab === 'history'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm`}
-              >
-                History
-              </button>
-            </nav>
-          </div>
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+              <div className="border-b border-gray-100">
+                <nav className="flex -mb-px">
+                  <button
+                    onClick={() => setActiveTab('overview')}
+                    className={`${
+                      activeTab === 'overview'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-colors`}
+                  >
+                    Overview
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('ehrs')}
+                    className={`${
+                      activeTab === 'ehrs'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-colors`}
+                  >
+                    EHRs
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('history')}
+                    className={`${
+                      activeTab === 'history'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-colors`}
+                  >
+                    History
+                  </button>
+                </nav>
+              </div>
 
-          {/* Tab Content */}
-          <div className="p-6">
-            {activeTab === 'overview' && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
-                  <div className="mt-4 space-y-4">
-                    {ehrs.slice(0, 3).map((ehr) => (
-                      <div key={ehr.id} className="flex items-center justify-between">
+              {/* Tab Content */}
+              <div className="p-8">
+                {activeTab === 'overview' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
+                      <div className="space-y-4">
+                        {ehrs.slice(0, 3).map((ehr) => (
+                          <div key={ehr.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">{ehr.type}</p>
+                              <p className="text-sm text-gray-500">{ehr.date}</p>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className={`px-2 py-1 text-xs rounded-full ${
+                                ehr.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {ehr.status}
+                              </span>
+                              <Link
+                                href={`/ehr/${ehr.id}`}
+                                className="text-sm text-blue-600 hover:text-blue-500 transition-colors"
+                              >
+                                View
+                              </Link>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'ehrs' && (
+                  <div className="space-y-4">
+                    {ehrs.map((ehr) => (
+                      <div key={ehr.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div>
                           <p className="text-sm font-medium text-gray-900">{ehr.type}</p>
-                          <p className="text-sm text-gray-500">{ehr.date}</p>
+                          <p className="text-sm text-gray-500">{ehr.date} • {ehr.doctor}</p>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-4">
                           <span className={`px-2 py-1 text-xs rounded-full ${
                             ehr.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                           }`}>
@@ -239,7 +260,7 @@ export default function PatientPageClient({ patientId }: PatientPageClientProps)
                           </span>
                           <Link
                             href={`/ehr/${ehr.id}`}
-                            className="text-sm text-blue-600 hover:text-blue-500"
+                            className="text-sm text-blue-600 hover:text-blue-500 transition-colors"
                           >
                             View
                           </Link>
@@ -247,43 +268,15 @@ export default function PatientPageClient({ patientId }: PatientPageClientProps)
                       </div>
                     ))}
                   </div>
-                </div>
-              </div>
-            )}
+                )}
 
-            {activeTab === 'ehrs' && (
-              <div className="space-y-4">
-                {ehrs.map((ehr) => (
-                  <div key={ehr.id} className="flex items-center justify-between py-4 border-b border-gray-200 last:border-0">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{ehr.type}</p>
-                      <p className="text-sm text-gray-500">{ehr.date} • {ehr.doctor}</p>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        ehr.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {ehr.status}
-                      </span>
-                      <Link
-                        href={`/ehr/${ehr.id}`}
-                        className="text-sm text-blue-600 hover:text-blue-500"
-                      >
-                        View
-                      </Link>
-                    </div>
+                {activeTab === 'history' && (
+                  <div className="text-sm text-gray-500">
+                    Patient history and timeline will be displayed here.
                   </div>
-                ))}
+                )}
               </div>
-            )}
-
-            {activeTab === 'history' && (
-              <div className="space-y-4">
-                <div className="text-sm text-gray-500">
-                  Patient history and timeline will be displayed here.
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </main>
