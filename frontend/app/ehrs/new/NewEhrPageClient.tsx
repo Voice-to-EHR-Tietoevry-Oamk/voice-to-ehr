@@ -20,6 +20,15 @@ interface NewEhrPageClientProps {
 
 type Step = 'patient' | 'visit' | 'recording' | 'prompt' | 'generate' | 'review';
 
+interface EhrResponse {
+  transcription: string;
+  symptoms: string;
+  diagnosis: string;
+  treatment: string;
+  success: boolean;
+  timestamp: string | null;
+}
+
 export default function NewEhrPageClient({ patientId }: NewEhrPageClientProps) {
   const [currentStep, setCurrentStep] = useState<Step>('patient');
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -192,14 +201,11 @@ export default function NewEhrPageClient({ patientId }: NewEhrPageClientProps) {
 
       const data = await response.json();
       
-      if (!data.transcription || !data.formatted_ehr) {
+      if (!data.transcription) {
         throw new Error('Invalid response from server');
       }
 
-      setGeneratedEhr({
-        transcription: data.transcription,
-        ...parseEhrSections(data.formatted_ehr)
-      });
+      setGeneratedEhr(parseEhrSections(data));
       
       // Move to review step
       setCurrentStep('review');
@@ -211,28 +217,13 @@ export default function NewEhrPageClient({ patientId }: NewEhrPageClientProps) {
     }
   };
 
-  const parseEhrSections = (formattedEhr: string) => {
-    // Split the formatted EHR into sections
-    const sections = formattedEhr.split('\n\n');
-    const ehrData: any = {};
-    
-    sections.forEach(section => {
-      if (section.includes('Chief Complaint:')) {
-        ehrData.chiefComplaint = section.replace('Chief Complaint:', '').trim();
-      } else if (section.includes('History of Present Illness:')) {
-        ehrData.presentIllness = section.replace('History of Present Illness:', '').trim();
-      } else if (section.includes('Past Medical History:')) {
-        ehrData.pastHistory = section.replace('Past Medical History:', '').trim();
-      } else if (section.includes('Medications:')) {
-        ehrData.medications = section.replace('Medications:', '').trim();
-      } else if (section.includes('Assessment:')) {
-        ehrData.assessment = section.replace('Assessment:', '').trim();
-      } else if (section.includes('Plan:')) {
-        ehrData.plan = section.replace('Plan:', '').trim();
-      }
-    });
-    
-    return ehrData;
+  const parseEhrSections = (formattedEhr: EhrResponse) => {
+    return {
+      transcription: formattedEhr.transcription,
+      symptoms: formattedEhr.symptoms,
+      diagnosis: formattedEhr.diagnosis,
+      treatment: formattedEhr.treatment
+    };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
