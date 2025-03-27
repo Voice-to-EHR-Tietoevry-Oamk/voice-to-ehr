@@ -2,18 +2,10 @@ import os
 import openai
 import tempfile
 import logging
-import time
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Debug logging
-logger.info("Azure OpenAI Configuration:")
-logger.info(f"Whisper API Key present: {'Yes' if os.getenv('AZURE_OPENAI_KEY_WHISPER') else 'No'}")
-logger.info(f"Whisper Endpoint present: {'Yes' if os.getenv('AZURE_OPENAI_ENDPOINT_WHISPER') else 'No'}")
-logger.info(f"Turbo API Key present: {'Yes' if os.getenv('AZURE_OPENAI_KEY_TURBO') else 'No'}")
-logger.info(f"Turbo Endpoint present: {'Yes' if os.getenv('AZURE_OPENAI_ENDPOINT_TURBO') else 'No'}")
 
 def configure_whisper():
     """Configure OpenAI for Whisper"""
@@ -22,11 +14,11 @@ def configure_whisper():
     openai.api_base = os.getenv('AZURE_OPENAI_ENDPOINT_WHISPER')
     openai.api_version = "2024-02-15-preview"
 
-def configure_turbo():
-    """Configure OpenAI for GPT-3.5 Turbo"""
+def configure_gpt4():
+    """Configure OpenAI for GPT-4"""
     openai.api_type = "azure"
-    openai.api_key = os.getenv('AZURE_OPENAI_KEY_TURBO')
-    openai.api_base = os.getenv('AZURE_OPENAI_ENDPOINT_TURBO')
+    openai.api_key = os.getenv('AZURE_OPENAI_KEY')
+    openai.api_base = os.getenv('AZURE_OPENAI_ENDPOINT')
     openai.api_version = "2024-02-15-preview"
 
 def transcribe_audio(audio_file):
@@ -62,82 +54,111 @@ def transcribe_audio(audio_file):
         if not transcription or not transcription.text:
             raise ValueError("Transcription returned empty result")
             
-        logger.info(f"Transcription successful: {transcription.text[:100]}...")
+        print("\n================== AUDIO TO TEXT ==================")
+        print(transcription.text)
+        print("==================================================\n")
+        
         return transcription.text
 
-    except FileNotFoundError as e:
-        logger.error(f"File error: {str(e)}")
-        return None
-    except ValueError as e:
-        logger.error(f"Validation error: {str(e)}")
-        return None
-    except openai.error.AuthenticationError as e:
-        logger.error(f"Authentication failed: {str(e)}")
-        return None
-    except openai.error.RateLimitError as e:
-        logger.error(f"Rate limit exceeded: {str(e)}")
-        return None
-    except openai.error.APIConnectionError as e:
-        logger.error(f"API Connection error: {str(e)}")
-        return None
-    except openai.error.APIError as e:
-        logger.error(f"API error: {str(e)}")
-        return None
     except Exception as e:
-        logger.error(f"Unexpected error in transcription: {str(e)}")
+        print("\n================== TRANSCRIPTION ERROR ==================")
+        print(f"Error: {str(e)}")
+        print("======================================================\n")
         return None
 
-def format_ehr(transcription, max_retries=3):
-    """Format transcription into structured EHR using Azure OpenAI with retry logic"""
-    for attempt in range(max_retries):
-        try:
-            # Configure for Turbo
-            configure_turbo()
+def format_ehr(transcription):
+    """Format transcription into minimal, clear EHR note"""
+    try:
+        configure_gpt4()
+        if not transcription:
+            raise ValueError("Empty transcription")
 
-            if not transcription:
-                raise ValueError("Transcription input is empty")
+        prompt = '''Convert this medical transcription into a clear, concise note with these sections:
 
-            prompt = f"""Please format this medical transcription into a structured EHR with the following sections:
-            - Chief Complaint
-            - History of Present Illness
-            - Past Medical History
-            - Medications
-            - Assessment
-            - Plan
-            
-            Transcription: {transcription}"""
+        SYMPTOMS:
+        [Main symptoms with duration and severity]
 
-            response = openai.ChatCompletion.create(
-                engine="gpt-35-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a medical transcriptionist assistant. Format the given transcription into a structured EHR format."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.3,
-                max_tokens=4096
-            )
-            
-            if not response or not response.choices:
-                raise ValueError("No response generated from the model")
-                
-            formatted_text = response.choices[0].message['content']
-            if not formatted_text:
-                raise ValueError("Empty response from the model")
-                
-            logger.info("EHR formatting successful")
-            return formatted_text
+        DIAGNOSIS:
+        [Primary diagnosis only]
 
-        except openai.error.RateLimitError as e:
-            if attempt < max_retries - 1:
-                wait_time = 65  # Wait 65 seconds before retry
-                logger.warning(f"Rate limit hit, waiting {wait_time} seconds before retry {attempt + 1}/{max_retries}")
-                time.sleep(wait_time)
-                continue
-            logger.error(f"Rate limit exceeded after {max_retries} retries")
-            return None
-        except Exception as e:
-            logger.error(f"Error in EHR formatting: {str(e)}")
-            return None
+        TREATMENT:
+        [Key medications and instructions]
+
+        Rules:
+        1. Maximum 3 lines per section
+        2. Use simple, clear medical terms
+        3. Focus on essential information only
+        4. No bullet points or lists
+        5. Write "None recorded" if no information
+        6. Keep medical terms as spoken by doctor
+        7. No detailed explanations or differentials
+        8. One clear action item per section
+
+        Example format:
+        SYMPTOMS:
+        Severe headache for 3 days, right temple, 8/10 pain with nausea.
+
+        DIAGNOSIS:
+        Acute migraine, first episode.
+
+        TREATMENT:
+        Sumatriptan 50mg PRN, rest in dark room, follow up in 1 week.
+
+        Text: {text}'''.format(text=transcription)
+
+        response = openai.ChatCompletion.create(
+            deployment_id="gpt-4",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are creating minimal, clear medical notes. Be concise but precise."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.1,
+            max_tokens=300
+        )
+        
+        formatted_text = response.choices[0].message['content']
+        
+        print("\n================== TEXT TO EHR ==================")
+        print(formatted_text)
+        print("=============================================\n")
+        
+        # Parse sections
+        sections = {
+            'symptoms': '',
+            'diagnosis': '',
+            'treatment': ''
+        }
+        
+        current_section = None
+        for line in formatted_text.split('\n'):
+            if 'SYMPTOMS:' in line:
+                current_section = 'symptoms'
+            elif 'DIAGNOSIS:' in line:
+                current_section = 'diagnosis'
+            elif 'TREATMENT:' in line:
+                current_section = 'treatment'
+            elif line.strip() and current_section:
+                sections[current_section] += line.strip() + ' '
+        
+        # Clean up sections
+        for key in sections:
+            sections[key] = sections[key].strip()
+            if not sections[key]:
+                sections[key] = "None recorded"
+        
+        return sections
+
+    except Exception as e:
+        print("\n================== ERROR ==================")
+        print(f"Error: {str(e)}")
+        print("=========================================\n")
+        return None
 
 def process_audio(audio_data):
     """Process audio data into structured EHR"""
@@ -149,41 +170,34 @@ def process_audio(audio_data):
         with tempfile.NamedTemporaryFile(suffix='.webm', delete=False) as temp_audio:
             temp_audio.write(audio_data)
             temp_audio_path = temp_audio.name
-            logger.info(f"Temporary file created: {temp_audio_path}")
 
         try:
             # Transcribe audio
             transcription = transcribe_audio(temp_audio_path)
             if not transcription:
-                raise ValueError("Transcription failed")
+                return {"error": "Transcription failed"}
 
-            # Return transcription immediately
+            # Format EHR
+            formatted_data = format_ehr(transcription)
+            if not formatted_data:
+                return {"error": "EHR formatting failed"}
+
             result = {
+                "success": True,
                 "transcription": transcription,
-                "status": "transcribed"
+                "symptoms": formatted_data['symptoms'],
+                "diagnosis": formatted_data['diagnosis'],
+                "treatment": formatted_data['treatment'],
+                "timestamp": None  # Will be set by API
             }
-
-            # Try to format EHR
-            formatted_ehr = format_ehr(transcription)
-            if formatted_ehr:
-                result["formatted_ehr"] = formatted_ehr
-                result["status"] = "completed"
-            else:
-                result["error"] = "EHR formatting failed (rate limit - please try formatting again in 60 seconds)"
 
             return result
 
         finally:
-            # Cleanup temporary file
             try:
                 os.unlink(temp_audio_path)
-                logger.info("Temporary file cleaned up")
-            except Exception as e:
-                logger.warning(f"Failed to cleanup temporary file: {str(e)}")
+            except:
+                pass
 
-    except ValueError as e:
-        logger.error(f"Validation error: {str(e)}")
-        return {"error": str(e)}
     except Exception as e:
-        logger.error(f"Error in process_audio: {str(e)}")
         return {"error": str(e)} 

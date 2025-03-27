@@ -12,7 +12,7 @@ python -m venv venv
 2. Activate virtual environment:
 ```
 # Windows
-venv/Scripts/activate
+source venv/Scripts/activate
 
 # Linux/Mac
 source venv/bin/activate
@@ -25,7 +25,7 @@ pip install -r requirements.txt
 
 4. Run the application:
 ```
-python wsgi.py
+python app.py
 ```
 
 ## API Endpoints

@@ -7,14 +7,6 @@ from routes.voice import voice
 # Load environment variables first
 load_dotenv(override=True)
 
-# Log environment variables
-print("\nEnvironment variables loaded:")
-print(f"Current working directory: {os.getcwd()}")
-print(f"OPENAI_API_KEY present: {'Yes' if os.getenv('OPENAI_API_KEY') else 'No'}")
-print(f"OPENAI_API_KEY length: {len(os.getenv('OPENAI_API_KEY', ''))}")
-print(f"FLASK_APP: {os.getenv('FLASK_APP')}")
-print(f"FLASK_ENV: {os.getenv('FLASK_ENV')}\n")
-
 app = Flask(__name__)
 
 # Configure CORS properly
